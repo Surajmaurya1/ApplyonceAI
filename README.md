@@ -14,28 +14,19 @@ ApplyOnce AI is a secure, privacy-first universal profile parsing and browser fo
 ApplyOnce AI uses a decentralized, local-first storage design. Sensitive candidate credentials (including identity cards like Aadhaar/PAN) are retained exclusively within the client container (`localStorage` and `chrome.storage.local`), ensuring zero server-side persistence of personal data.
 
 ```mermaid
-flowchart TD
-    subgraph Client Application (Port 5173)
-        A[React Client UI] <-->|Read / Write| B[(Local Storage)]
-        A -->|Execute OCR| C[Tesseract.js Web Worker]
-        B -->|Message Passing| D[Chrome Content Script]
-    end
-
-    subgraph Service Layer (Port 3001)
-        E[Express Router] -->|Rate Limiter| F[AI Extraction Controller]
-        F -->|Prompt Context| G[Google Gemini API]
-    end
-
-    subgraph Chrome Extension sandbox
-        D <-->|chrome.storage.local| H[(Extension Database)]
-        H <-->|State Preview| I[Extension Popup UI]
-    end
-
-    C -->|Raw Text Extract| A
-    A -->|OCR Payload| E
-    G -->|Structured JSON Response| F
-    F -->|Validated Credentials| A
-    I -->|Auto-fill Commands| D
+graph TD
+    User([User Document/Resume]) -->|Upload| WebApp[React Client - localhost:5173]
+    WebApp -->|OCR Image Text| Server[Express Server - localhost:3001]
+    Server -->|Prompt with OCR Text| Gemini[Gemini 2.0 Flash API]
+    Gemini -->|Structured Profile JSON| Server
+    Server -->|Sync Data| WebApp
+    WebApp -->|postMessage| ExtContent[Chrome Extension Content Script]
+    ExtContent -->|Save Profile| ExtStorage[(chrome.storage.local)]
+    
+    AnySite[External Job Portal/Form] -->|Auto-fill Trigger| ExtPopup[Extension Popup UI]
+    ExtPopup -->|Trigger Autofill| ExtContent
+    ExtStorage -->|Read Profile| ExtContent
+    ExtContent -->|Dynamic Mapping| AnySite
 ```
 
 ---
