@@ -1,96 +1,131 @@
-# ✦ ApplyOnce AI — Stop Retyping, Start Applying
+# ApplyOnce AI — Enterprise-Grade Universal Application Autofill Engine
 
-> **Built for Hackathons:** A premium web application and Chrome extension suite that automates online form filling using AI-driven profile parsing and local browser-based secure storage.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-v18%2B-green.svg)](https://nodejs.org/)
+[![Chrome Extension](https://img.shields.io/badge/Chrome%20Extension-Manifest%20V3-orange.svg)](https://developer.chrome.com/docs/extensions/)
+[![AI Engine](https://img.shields.io/badge/AI%20Engine-Gemini%202.0%20Flash-blueviolet.svg)](https://aistudio.google.com/)
 
----
-
-## 🚀 The Problem & The Solution
-Applying to jobs, college admissions, and civic forms is incredibly repetitive. Applicants spend hours copy-pasting the same profile fields, certificates, grades, and identity details across different platforms.
-
-**ApplyOnce AI** changes this:
-1. **AI Extraction**: Upload a resume, Aadhaar, PAN card, or mark sheet. The app performs local OCR text extraction and passes it to **Google Gemini 2.0 Flash** to parse it into structured JSON matching your credentials.
-2. **Dynamic Chrome Extension**: Open any application portal, click the extension icon, and auto-fill the form instantly. It dynamically maps name, email, identity documents, education entries, and job durations to the form fields.
-3. **Privacy First**: Your personal data stays in your browser’s local storage (`localStorage`). No central databases, no tracking.
+ApplyOnce AI is a secure, privacy-first universal profile parsing and browser form-filling automation engine. The platform combines in-browser OCR processing with LLM semantic extraction to construct structure-validated candidate profiles, enabling seamless autofill workflows across any online application portal.
 
 ---
 
-## 🎨 Tech Stack & Architecture
+## 📌 Architectural Overview
 
-- **Frontend**: React (Vite), Zustand (State Management), Tailwind CSS v4, Lucide Icons, Framer Motion (Animations), Sonner (Toasts)
-- **Backend (API)**: Node.js, Express, Tesseract.js (Local OCR Engine), Google Generative AI (@google/generative-ai)
-- **Extension**: Chrome Extension Manifest V3 (Vanilla JS content script & background workers)
+ApplyOnce AI uses a decentralized, local-first storage design. Sensitive candidate credentials (including identity cards like Aadhaar/PAN) are retained exclusively within the client container (`localStorage` and `chrome.storage.local`), ensuring zero server-side persistence of personal data.
 
 ```mermaid
-graph TD
-    User([User Document/Resume]) -->|Upload| WebApp[React Client - localhost:5173]
-    WebApp -->|OCR Image Text| Server[Express Server - localhost:3001]
-    Server -->|Prompt with OCR Text| Gemini[Gemini 2.0 Flash API]
-    Gemini -->|Structured Profile JSON| Server
-    Server -->|Sync Data| WebApp
-    WebApp -->|postMessage| ExtContent[Chrome Extension Content Script]
-    ExtContent -->|Save Profile| ExtStorage[(chrome.storage.local)]
-    
-    AnySite[External Job Portal/Form] -->|Auto-fill Trigger| ExtPopup[Extension Popup UI]
-    ExtPopup -->|Trigger Autofill| ExtContent
-    ExtStorage -->|Read Profile| ExtContent
-    ExtContent -->|Dynamic Mapping| AnySite
+flowchart TD
+    subgraph Client Application (Port 5173)
+        A[React Client UI] <-->|Read / Write| B[(Local Storage)]
+        A -->|Execute OCR| C[Tesseract.js Web Worker]
+        B -->|Message Passing| D[Chrome Content Script]
+    end
+
+    subgraph Service Layer (Port 3001)
+        E[Express Router] -->|Rate Limiter| F[AI Extraction Controller]
+        F -->|Prompt Context| G[Google Gemini API]
+    end
+
+    subgraph Chrome Extension sandbox
+        D <-->|chrome.storage.local| H[(Extension Database)]
+        H <-->|State Preview| I[Extension Popup UI]
+    end
+
+    C -->|Raw Text Extract| A
+    A -->|OCR Payload| E
+    G -->|Structured JSON Response| F
+    F -->|Validated Credentials| A
+    I -->|Auto-fill Commands| D
 ```
 
 ---
 
-## ✨ Features
+## 🎯 Key Features
 
-- **✦ Gemini-Powered Parsing**: Converts disorganized OCR text into high-fidelity profile profiles.
-- **✦ Advanced Field Matching Engine**: Uses smart regex and word boundary matches to map complex fields (e.g., preventing false positives like filling "Name" into a "Username" field).
-- **✦ Deep Path Mapping**: Automatically fills nested attributes like passing year, graduation percentage, and highest degree (e.g. mapping form inputs directly to `education[0].level`).
-- **✦ Privacy-Preserving Cache**: Securely persists synced details in `chrome.storage.local`.
-- **✦ Mock Form Sandbox**: A built-in playground to test, preview confidence scores, and preview color highlighting before submitting.
+- **LLM-Powered Document Semantic Extraction**: Eliminates rigid resume templates. Upload raw text files or document images (Aadhaar, PAN cards, CVs, mark sheets), execute in-browser OCR via Web Workers, and compile structured profiles via Google Gemini 2.0 Flash API.
+- **Dynamic Field Mapping Engine**: Maps forms dynamically on any domain using exact matching, semantic pattern groupings, and regex boundary checks (e.g. `\bname\b` prevents matching fields like `username` or `domainName` as the applicant's name).
+- **Nested Path Resolution**: Supports deep nesting extraction to parse and autofill education history, percentages/CGPAs, passing years, and career histories (e.g. `education[0].level`, `experience[0].company`).
+- **Real-Time Extension Sync Engine**: Leverages safe cross-document messaging (`window.postMessage`) with integrated retry handlers to sync credentials from the main dashboard into `chrome.storage.local` with zero latency.
+- **Autofill Confidence Highlighting**: Surfaces visual flags (Green for high confidence matches, Amber for manual verification fields, Red for missing data) in client sandboxes.
 
 ---
 
-## 🛠️ Installation & Setup
+## 📂 Repository Structure
+
+```
+applyonce-ai/
+├── client/                     # React / Vite Client Application
+│   ├── src/
+│   │   ├── components/         # Reusable UI Components & Layouts
+│   │   ├── features/           # Zustand stores and core state logic
+│   │   ├── pages/              # Application Pages (Dashboard, Profile, Documents)
+│   │   └── services/           # Storage, OCR and API Sync Clients
+│   └── vite.config.js          # Client Build Configurations
+├── server/                     # Node.js Express REST API
+│   ├── src/
+│   │   ├── controllers/        # AI & OCR Route Handlers
+│   │   ├── middleware/         # Security & Error Middlewares
+│   │   ├── routes/             # Express App Routes
+│   │   └── services/           # Gemini Integration Services
+│   ├── app.js                  # Application Router Definitions
+│   └── server.js               # Service Entrypoint
+├── extension/                  # Chrome Extension Root Container
+│   ├── background.js           # Extension Background Service Worker
+│   ├── content.js              # DOM Scanning & Form Injection Script
+│   ├── popup.html              # Modern Glassmorphic Extension HUD
+│   ├── popup.js                # HUD Interaction Controller
+│   └── manifest.json           # Extension Metadata (Manifest V3)
+├── shared/                     # Multi-workspace Shared Constants
+└── package.json                # Project Workspace Configurations
+```
+
+---
+
+## 🛠️ Installation & Server Orchestration
 
 ### Prerequisites
-- Node.js (v18+)
+- Node.js (v18.0.0 or higher)
 - NPM
 
-### 1. Clone & Install Dependencies
-Run the following at the project root to install workspace dependencies:
+### 1. Environment Configurations
+Configure the workspace by creating a `.env` file in the project root directory:
+
+```env
+PORT=3001
+GEMINI_API_KEY=AIzaSy...           # Google Generative AI API Key
+CLIENT_URL=http://localhost:5173
+```
+
+### 2. Workspace Dependencies Installation
+Install dependencies across both client and server workspaces:
 ```bash
 npm install
 ```
 
-### 2. Configure Environment Variables
-Create a `.env` file in the **project root** directory:
-```env
-PORT=3001
-GEMINI_API_KEY=your_gemini_api_key_here
-CLIENT_URL=http://localhost:5173
-```
-*(Make sure to obtain a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey))*
-
-### 3. Start Client & Server
-Start both client and server concurrently using the workspace script:
+### 3. Server Initialization
+Launch both the Vite development client and the Node.js API cluster concurrently:
 ```bash
 npm run dev
 ```
-- Client runs on: `http://localhost:5173`
-- Server runs on: `http://localhost:3001`
+
+- **Vite Web Console**: `http://localhost:5173`
+- **REST API Endpoint**: `http://localhost:3001`
 
 ---
 
-## 🔌 Chrome Extension Setup
+## 🔌 Chrome Extension Deployment
 
 1. Open **Google Chrome** and navigate to `chrome://extensions/`.
-2. Enable **Developer mode** (toggle in the top-right corner).
-3. Click **Load unpacked** (top-left button).
-4. Select the project's `extension` directory.
-5. Open the Web App (`http://localhost:5173`), go to **My Profile**, fill in your details, and click **Save profile**. The extension will automatically sync and cache your profile.
-6. Test it immediately on our sandbox form at `http://localhost:5173/applications/demo`!
+2. Turn on **Developer mode** using the toggle switch in the upper-right corner.
+3. Click the **Load unpacked** button in the upper-left corner.
+4. Select the project's `extension/` directory.
+5. Visit the Web App dashboard, click **My Profile**, populate your credentials, and click **Save Profile** to sync details to the extension container.
+6. Open any external application form (or the built-in Sandbox form at `/applications/demo`) and click **Auto-fill form** inside the extension HUD to fill the fields instantly.
 
 ---
 
-## 🛡️ Security & Privacy
-ApplyOnce AI is designed around data ownership:
-- Your identity details, PAN, and Aadhaar numbers are stored directly inside your browser cache (`localStorage` and `chrome.storage.local`).
-- Profile extraction requests call Google Gemini API endpoints without intermediate database caching, ensuring your documents are parsed in-flight and stored locally.
+## 🔒 Security Posture & Privacy Compliance
+
+- **No Central Database Storage**: Personal Identifiable Information (PII) including Aadhaar, phone numbers, and addresses are saved directly in sandbox-isolated browser memory.
+- **Local In-Browser OCR Processing**: Tesseract.js processing executes via sandboxed Web Workers directly inside the client's browser, preventing document binaries from being sent to third-party file storage servers.
+- **Transit-Only AI Ingestion**: Document OCR text is sent to Google Gemini endpoints via TLS-encrypted connections. The server executes in-flight transformations and returns structured data without logging payloads.
