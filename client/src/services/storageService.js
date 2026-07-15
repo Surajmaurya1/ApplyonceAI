@@ -12,6 +12,8 @@ export const defaultProfile = {
     state: '',
     pincode: '',
   },
+  aadhaarNumber: '',
+  panNumber: '',
   education: [],
   experience: [],
   skills: [],
@@ -52,6 +54,9 @@ try {
       window.postMessage({ type: 'APPLYONCE_SYNC_PROFILE', profile: storageService.getProfile() }, '*')
     }
   })
+  
+  // Immediately post current profile on startup to prevent extension loading race conditions
+  window.postMessage({ type: 'APPLYONCE_SYNC_PROFILE', profile: storageService.getProfile() }, '*')
 } catch (e) {
   console.warn('Could not register window message listener', e)
 }

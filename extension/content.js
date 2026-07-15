@@ -1,15 +1,60 @@
-const mappings = {
-  name: ['full name', 'name', 'applicant name', 'candidate name'],
-  email: ['email', 'e-mail', 'email address'],
-  phone: ['phone', 'mobile', 'contact', 'telephone'],
-  dob: ['date of birth', 'dob', 'birth date'],
-  gender: ['gender', 'sex'],
-  address: ['address', 'permanent address', 'residential address', 'full address'],
-  city: ['city', 'town', 'district'],
-  state: ['state', 'province'],
-  pincode: ['pincode', 'pin code', 'postal', 'zip code'],
-  aadhaarNumber: ['aadhaar', 'aadhar', 'uidai'],
-  panNumber: ['pan number', 'pan card', 'permanent account number']
+const fieldMappings = {
+  name: {
+    patterns: ['full name', 'name', 'applicant name', 'candidate name'],
+    path: 'name'
+  },
+  email: {
+    patterns: ['email', 'email address', 'e-mail'],
+    path: 'email'
+  },
+  phone: {
+    patterns: ['phone', 'mobile', 'contact number', 'telephone'],
+    path: 'phone'
+  },
+  dob: {
+    patterns: ['date of birth', 'dob', 'birth date'],
+    path: 'dob'
+  },
+  gender: {
+    patterns: ['gender', 'sex'],
+    path: 'gender'
+  },
+  address: {
+    patterns: ['address', 'permanent address', 'residential address', 'full address'],
+    path: 'address.full'
+  },
+  city: {
+    patterns: ['city', 'town', 'district'],
+    path: 'address.city'
+  },
+  state: {
+    patterns: ['state', 'province'],
+    path: 'address.state'
+  },
+  pincode: {
+    patterns: ['pincode', 'pin code', 'postal code', 'zip code'],
+    path: 'address.pincode'
+  },
+  aadhaar: {
+    patterns: ['aadhaar', 'aadhar', 'uidai'],
+    path: 'aadhaarNumber'
+  },
+  pan: {
+    patterns: ['pan number', 'pan card', 'permanent account number'],
+    path: 'panNumber'
+  },
+  qualification: {
+    patterns: ['qualification', 'highest qualification', 'education'],
+    path: 'education[0].level'
+  },
+  percentage: {
+    patterns: ['percentage', 'marks', 'cgpa', 'gpa'],
+    path: 'education[0].percentage'
+  },
+  passingYear: {
+    patterns: ['passing year', 'year of passing', 'graduation year'],
+    path: 'education[0].year'
+  }
 };
 
 const protectedWords = ['password', 'captcha', 'otp', 'security', 'verification', 'secret', 'pin'];
@@ -25,9 +70,17 @@ function info(el) {
 function match(el) {
   const text = info(el);
   if (protectedWords.some(w => text.includes(w))) return null;
-  return Object.entries(mappings).find(([, words]) =>
-    words.some(w => text === w || text.includes(w))
-  )?.[0];
+  
+  for (const [key, mapping] of Object.entries(fieldMappings)) {
+    const matched = mapping.patterns.some(pattern => {
+      if (pattern === 'name') {
+        return text === 'name' || new RegExp('\\bname\\b').test(text);
+      }
+      return text.includes(pattern);
+    });
+    if (matched) return key;
+  }
+  return null;
 }
 
 function fields() {
@@ -35,18 +88,28 @@ function fields() {
     .filter(x => !x.disabled && match(x));
 }
 
+function getValueByPath(obj, path) {
+  if (!path) return undefined;
+  return path.split(/[.[\]]+/).filter(Boolean).reduce((acc, part) => {
+    return acc != null ? acc[part] : undefined;
+  }, obj);
+}
+
 function fill(profile) {
   let filled = 0, review = 0;
+  console.log('Attempting autofill with profile data:', profile);
+  
   for (const el of fields()) {
     const key = match(el);
     if (!key) continue;
-    let value;
-    if (key === 'address') value = profile.address?.full;
-    else if (key === 'city') value = profile.address?.city;
-    else if (key === 'state') value = profile.address?.state;
-    else if (key === 'pincode') value = profile.address?.pincode;
-    else value = profile[key];
-    if (!value) continue;
+    
+    const mapping = fieldMappings[key];
+    if (!mapping) continue;
+    
+    const value = getValueByPath(profile, mapping.path);
+    if (value === undefined || value === null || value === '') continue;
+
+    console.log(`Matching field: ${key} -> ${value}`);
 
     if (el.tagName === 'SELECT') {
       const option = [...el.options].find(o =>
@@ -67,7 +130,7 @@ function fill(profile) {
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
     
-    // Add highlighting: Green for filled fields
+    // Green highlight for filled fields
     el.style.outline = '2px solid #22c55e';
     el.style.outlineOffset = '2px';
     setTimeout(() => {
@@ -83,7 +146,7 @@ function fill(profile) {
 window.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'APPLYONCE_SYNC_PROFILE') {
     chrome.storage.local.set({ applyonceProfile: event.data.profile }, () => {
-      console.log('ApplyOnce Profile successfully synced to local extension storage.');
+      console.log('ApplyOnce Profile successfully synced to local extension storage:', event.data.profile);
     });
   }
 });
@@ -94,15 +157,37 @@ chrome.runtime.onMessage.addListener((msg, _, send) => {
   }
   if (msg.type === 'FILL_FORM') {
     chrome.storage.local.get('applyonceProfile', x => {
-      send(fill(x.applyonceProfile || {}));
+      const result = fill(x.applyonceProfile || {});
+      send(result);
     });
+  }
+  if (msg.type === 'TRIGGER_SYNC') {
+    try {
+      window.postMessage({ type: 'APPLYONCE_REQUEST_SYNC' }, '*');
+      send({ success: true });
+    } catch (e) {
+      send({ success: false, error: e.message });
+    }
   }
   return true;
 });
 
-// Request profile sync from the web app immediately on load
-try {
-  window.postMessage({ type: 'APPLYONCE_REQUEST_SYNC' }, '*');
-} catch (e) {
-  console.warn('Could not post sync request message', e);
+// Sync request retries to solve loading race conditions
+let syncRetries = 0;
+function requestSync() {
+  if (syncRetries >= 5) return;
+  syncRetries++;
+  try {
+    window.postMessage({ type: 'APPLYONCE_REQUEST_SYNC' }, '*');
+  } catch (e) {
+    console.warn('Could not post sync request message', e);
+  }
+  
+  chrome.storage.local.get('applyonceProfile', (data) => {
+    if (!data.applyonceProfile || Object.keys(data.applyonceProfile).length === 0) {
+      setTimeout(requestSync, 1000);
+    }
+  });
 }
+requestSync();
+

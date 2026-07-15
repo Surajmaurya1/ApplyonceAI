@@ -38,11 +38,17 @@ export default function DemoForm() {
       { key: 'state', value: profile.address?.state, highConfidence: false },
       { key: 'pincode', value: profile.address?.pincode, highConfidence: false },
       { key: 'gender', value: profile.gender, highConfidence: false },
+      { key: 'aadhaar', value: profile.aadhaarNumber, highConfidence: true },
+      { key: 'pan', value: profile.panNumber, highConfidence: true },
+      { key: 'qualification', value: profile.education?.[0]?.level, highConfidence: false },
+      { key: 'percentage', value: profile.education?.[0]?.percentage, highConfidence: false },
+      { key: 'passingYear', value: profile.education?.[0]?.year, highConfidence: false },
     ]
 
     fields.forEach(({ key, value, highConfidence }) => {
-      if (value && value.trim() !== '') {
-        updatedForm[key] = value
+      const stringVal = value ? String(value).trim() : ''
+      if (stringVal !== '') {
+        updatedForm[key] = stringVal
         updatedStatus[key] = highConfidence ? 'success' : 'review'
       } else {
         updatedForm[key] = ''
@@ -91,6 +97,11 @@ export default function DemoForm() {
     { key: 'city', label: 'City', type: 'text' },
     { key: 'state', label: 'State', type: 'text' },
     { key: 'pincode', label: 'PIN code', type: 'text' },
+    { key: 'aadhaar', label: 'Aadhaar Number', type: 'text' },
+    { key: 'pan', label: 'PAN Card Number', type: 'text' },
+    { key: 'qualification', label: 'Highest Qualification', type: 'text' },
+    { key: 'percentage', label: 'Percentage / CGPA', type: 'text' },
+    { key: 'passingYear', label: 'Passing Year', type: 'text' },
   ]
 
   return (

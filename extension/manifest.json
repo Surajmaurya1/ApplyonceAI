@@ -1,1 +1,30 @@
-{"manifest_version":3,"name":"ApplyOnce AI","version":"1.0.0","description":"Fill application forms from your ApplyOnce profile.","permissions":["storage","activeTab","scripting"],"action":{"default_popup":"popup.html"},"background":{"service_worker":"background.js","type":"module"},"content_scripts":[{"matches":["<all_urls>"],"js":["content.js"],"run_at":"document_idle"}]}
+{
+  "manifest_version": 3,
+  "name": "ApplyOnce AI",
+  "version": "1.0.0",
+  "description": "Fill application forms from your ApplyOnce profile.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
+
