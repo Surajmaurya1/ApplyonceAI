@@ -4,13 +4,14 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../co
 import Input from '../components/ui/Input'
 import Label from '../components/ui/Label'
 import Select from '../components/ui/Select'
-import { useProfile } from '../features/profile/profileStore'
+import { useProfile, useAnalytics } from '../features/profile/profileStore'
 import { toast } from 'sonner'
 import { Badge } from '../components/ui/Badge'
 import { ShieldCheck, Info, CheckCircle2, AlertTriangle } from 'lucide-react'
 
 export default function DemoForm() {
   const { profile } = useProfile()
+  const { recordFill } = useAnalytics()
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -58,6 +59,12 @@ export default function DemoForm() {
 
     setForm(updatedForm)
     setFieldStatus(updatedStatus)
+
+    const filledCount = Object.keys(updatedForm).filter(k => updatedForm[k] !== '').length
+    if (filledCount > 0) {
+      recordFill({ fieldsFilled: filledCount, website: 'ApplyOnce Sandbox Form' })
+    }
+
     toast.success('Auto-fill complete — review highlighted fields.')
   }
 

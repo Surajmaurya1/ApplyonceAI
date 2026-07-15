@@ -4,33 +4,33 @@
 @plugin "tailwindcss-animate";
 
 :root {
-  --background: #090909;
+  --background: #0F1117;
   --foreground: #FAFAFA;
   
-  --card: #111111;
+  --card: #171923;
   --card-foreground: #FAFAFA;
   
-  --popover: #171717;
+  --popover: #1E2030;
   --popover-foreground: #FAFAFA;
   
-  --primary: #FFFFFF;
-  --primary-foreground: #090909;
+  --primary: #4F8CFF;
+  --primary-foreground: #FFFFFF;
   
-  --secondary: #171717;
+  --secondary: #1E2030;
   --secondary-foreground: #FAFAFA;
   
-  --muted: #171717;
+  --muted: #1E2030;
   --muted-foreground: #A1A1AA;
   
-  --accent: #FFFFFF;
-  --accent-foreground: #090909;
+  --accent: #7C5CFF;
+  --accent-foreground: #FFFFFF;
   
-  --destructive: #EF4444;
+  --destructive: #FF5D73;
   --destructive-foreground: #FAFAFA;
   
-  --border: #262626;
-  --input: #262626;
-  --ring: #FFFFFF;
+  --border: #2A2D3A;
+  --input: #2A2D3A;
+  --ring: #4F8CFF;
   
   --radius: 1rem;
 }
@@ -64,10 +64,10 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --color-success: #22C55E;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-  --color-secondary-card: #171717;
+  --color-success: #00D26A;
+  --color-warning: #FFC857;
+  --color-danger: #FF5D73;
+  --color-secondary-card: #1E2030;
   --color-primary-text: #FAFAFA;
   --color-secondary-text: #A1A1AA;
   

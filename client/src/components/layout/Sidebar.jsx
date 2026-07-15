@@ -1,13 +1,15 @@
-import { LayoutDashboard, UserRound, FileText, ClipboardList, Puzzle, Settings, ChevronLeft } from 'lucide-react'
+import { LayoutDashboard, UserRound, FileText, Globe, History, Briefcase, Settings, ChevronLeft, Sparkles } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { useProfile } from '../../features/profile/profileStore'
+import { storageService } from '../../services/storageService'
 
 const links = [
   [LayoutDashboard, 'Dashboard', '/dashboard'],
-  [UserRound, 'My Profile', '/profile'],
+  [UserRound, 'AI Profile', '/profile'],
   [FileText, 'Documents', '/documents'],
-  [ClipboardList, 'Applications', '/applications'],
-  [Puzzle, 'Extension', '/extension'],
+  [Briefcase, 'Job Assistant', '/job-assistant'],
+  [Globe, 'Extension', '/extension'],
+  [History, 'Autofill History', '/history'],
   [Settings, 'Settings', '/settings'],
 ]
 
@@ -16,6 +18,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
   const displayName = profile.name || 'Your Profile'
   const displayEmail = profile.email || 'Personal workspace'
   const avatarLetter = profile.name ? profile.name.trim().charAt(0).toUpperCase() : 'Y'
+  const completion = storageService.getProfileCompletion()
 
   return (
     <aside
@@ -25,11 +28,11 @@ export default function Sidebar({ collapsed, setCollapsed }) {
     >
       <div>
         <button
-          className="mb-8 flex w-full items-center gap-2.5 px-1.5 py-1 font-bold text-foreground hover:bg-[#171717] rounded-xl transition-colors"
+          className="mb-8 flex w-full items-center gap-2.5 px-1.5 py-1 font-bold text-foreground hover:bg-secondary rounded-xl transition-colors"
           onClick={() => setCollapsed(!collapsed)}
         >
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-white text-black font-extrabold text-sm shadow-sm shrink-0">
-            A
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#4F8CFF] text-white font-extrabold text-sm shadow-sm shrink-0">
+            <Sparkles size={16} className="fill-current" />
           </span>
           {!collapsed && <span className="tracking-tight text-sm text-[#FAFAFA]">ApplyOnce</span>}
           <ChevronLeft
@@ -40,17 +43,17 @@ export default function Sidebar({ collapsed, setCollapsed }) {
           />
         </button>
 
-        <nav className="space-y-1.5">
+        <nav className="space-y-1">
           {links.map(([Icon, label, to]) => (
             <NavLink
               to={to}
               key={to}
               title={label}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium transition-all ${
+                `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-[#171717] text-[#FAFAFA]'
-                    : 'text-[#A1A1AA] hover:bg-[#171717]/50 hover:text-[#FAFAFA]'
+                    ? 'bg-[#4F8CFF]/10 text-[#4F8CFF] border border-[#4F8CFF]/20'
+                    : 'text-[#A1A1AA] hover:bg-secondary/80 hover:text-[#FAFAFA]'
                 }`
               }
             >
@@ -61,9 +64,25 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         </nav>
       </div>
 
-      <div className="border-t border-border pt-4 text-xs text-[#A1A1AA] space-y-4">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-[#171717]/40 border border-border/40">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-white/10 font-semibold text-white shrink-0 text-xs">
+      <div className="border-t border-border pt-4 text-xs text-[#A1A1AA] space-y-3">
+        {/* Profile Completion Mini */}
+        {!collapsed && (
+          <div className="px-2">
+            <div className="flex justify-between mb-1.5">
+              <span className="text-[10px] text-[#A1A1AA]">Profile</span>
+              <span className="text-[10px] font-semibold text-[#4F8CFF]">{completion}%</span>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+              <div
+                className="h-full rounded-full bg-[#4F8CFF] transition-all duration-500"
+                style={{ width: `${completion}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-secondary/40 border border-border/40">
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-[#4F8CFF]/10 font-semibold text-[#4F8CFF] shrink-0 text-xs">
             {avatarLetter}
           </span>
           {!collapsed && (

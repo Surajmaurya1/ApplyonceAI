@@ -1,7 +1,8 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import { useState } from 'react'
 import Sidebar from './Sidebar'
-import { LayoutDashboard, UserRound, FileText, ClipboardList } from 'lucide-react'
+import AIChatBubble from '../ui/AIChatBubble'
+import { LayoutDashboard, UserRound, FileText, Briefcase, History } from 'lucide-react'
 
 export default function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(false)
@@ -9,7 +10,8 @@ export default function DashboardLayout() {
     [LayoutDashboard, '/dashboard'],
     [UserRound, '/profile'],
     [FileText, '/documents'],
-    [ClipboardList, '/applications'],
+    [Briefcase, '/job-assistant'],
+    [History, '/history'],
   ]
 
   return (
@@ -26,6 +28,9 @@ export default function DashboardLayout() {
         </main>
       </div>
 
+      {/* Floating Companion Bubble */}
+      <AIChatBubble />
+
       {/* Floating Bottom Nav for Mobile */}
       <nav className="fixed bottom-4 left-4 right-4 z-30 flex justify-around border border-border bg-card p-2 md:hidden rounded-2xl shadow-none">
         {mobile.map(([Icon, to]) => (
@@ -35,8 +40,8 @@ export default function DashboardLayout() {
             className={({ isActive }) =>
               `p-3 rounded-xl transition-all ${
                 isActive
-                  ? 'text-white bg-[#171717]'
-                  : 'text-[#A1A1AA] hover:text-white hover:bg-[#171717]/40'
+                  ? 'text-[#4F8CFF] bg-[#4F8CFF]/10'
+                  : 'text-[#A1A1AA] hover:text-white hover:bg-secondary/40'
               }`
             }
           >
