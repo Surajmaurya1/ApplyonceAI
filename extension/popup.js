@@ -110,14 +110,6 @@ fillBtn.onclick = () => {
       if (response && response.filled > 0) {
         resultEl.textContent = `Complete: ${response.filled} filled, ${response.review} need review.`;
         resultEl.style.color = '#22c55e';
-        
-        // Also update local webapp stats in storage if matching webapp tab
-        chrome.storage.local.get('applyonceProfile', x => {
-          // Tell page content script to fire recordFill stats to local React state via postMessage
-          chrome.tabs.sendMessage(tab.id, { type: 'COUNT_FIELDS' }, (r) => {
-            // Stats logged
-          });
-        });
       } else {
         resultEl.textContent = 'No matching profile values found to fill.';
         resultEl.style.color = '#f59e0b';
@@ -125,32 +117,6 @@ fillBtn.onclick = () => {
     });
   });
 };
-
-// Undo trigger
-const undoBtn = document.querySelector('#undo');
-if (undoBtn) {
-  undoBtn.onclick = () => {
-    resultEl.textContent = 'Reverting changes...';
-    resultEl.style.color = '#a1a1aa';
-    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-      if (!tab || !tab.id) return;
-      chrome.tabs.sendMessage(tab.id, { type: 'UNDO_FILL' }, (response) => {
-        if (chrome.runtime.lastError) {
-          resultEl.textContent = 'Failed to communicate with page.';
-          resultEl.style.color = '#ef4444';
-          return;
-        }
-        if (response && response.count > 0) {
-          resultEl.textContent = `Successfully reverted ${response.count} fields.`;
-          resultEl.style.color = '#00D26A';
-        } else {
-          resultEl.textContent = 'No modifications to revert.';
-          resultEl.style.color = '#f59e0b';
-        }
-      });
-    });
-  };
-}
 
 // Sync profile trigger
 syncNowEl.onclick = (e) => {
