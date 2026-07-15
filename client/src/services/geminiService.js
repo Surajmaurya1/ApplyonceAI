@@ -1,0 +1,1 @@
+import axios from 'axios'; export async function extractProfileFromText(ocrText,documentType){const {data}=await axios.post('/api/ai/extract',{ocrText,documentType});return data.data?.profileData||data.profileData||{}}

@@ -1,0 +1,1 @@
+export default function Spinner({size='md'}) { const sizes={sm:'h-4 w-4',md:'h-6 w-6',lg:'h-9 w-9'}; return <span aria-label="Loading" className={`${sizes[size]} inline-block animate-spin rounded-full border-2 border-current border-t-transparent`}/> }

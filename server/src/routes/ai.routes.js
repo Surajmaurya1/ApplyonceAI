@@ -1,0 +1,1 @@
+import {Router} from 'express'; import {extractProfile,chat} from '../controllers/ai.controller.js'; const router=Router();router.post('/extract',extractProfile);router.post('/chat',chat);export default router;

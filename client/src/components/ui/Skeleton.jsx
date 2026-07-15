@@ -1,0 +1,1 @@
+export default function Skeleton({shape='line',className=''}) {const shapes={line:'h-4 w-full rounded-xl',circle:'h-10 w-10 rounded-full',card:'h-40 w-full rounded-2xl',table:'h-12 w-full rounded-xl'};return <div className={`animate-pulse bg-[#171717] ${shapes[shape]} ${className}`}/>}
